@@ -11,13 +11,19 @@ def held_karp(dist):
     parent = [[-1] * n for _ in range(1 << n)]  # for backtracking the route
     
     dp[1][0] = 0  # only stop 0 visited, ending at 0
-    
+
+    #mask shows the status of each location (visited?)
+    # 1 << 4 = 16
     for mask in range(1 << n):
+
+        #j represents every possible current position
         for j in range(n):
             if not (mask & (1 << j)):
                 continue  # j not in this subset
             if dp[mask][j] == float('inf'):
                 continue  # unreachable state, skip
+
+            #every possible "next stop to add"
             for k in range(n):
                 if mask & (1 << k):
                     continue  # k already visited, can't go there
@@ -28,7 +34,31 @@ def held_karp(dist):
                     parent[new_mask][k] = j  # remember how we got here
     
     # find best end point
-    best_cost = min(dp[FULL][j] for j in range(1, n))  # or +dist[j][0] if round-trip
+    #best_cost = min(dp[FULL][j] for j in range(1, n))  # or +dist[j][0] if round-trip
+
+    best_cost = float('inf')
+    best_last = -1
+
+    for j in range(n):
+        if j == 0:
+            continue  # can't end at the start with nothing else visited, skip self-loop case
+        cost = dp[FULL][j] + dist[j][0]   # + cost to return home
+        if cost < best_cost:
+            best_cost = cost
+            best_last = j
+
+
     # TODO: backtrack using `parent` to reconstruct the actual route order
-    
-    return best_cost
+    path = []
+    mask, j = FULL, best_last
+
+    while j != -1:
+        path.append(j)
+        prev_j = parent[mask][j]     # look up predecessor BEFORE changing j
+        mask = mask & ~(1 << j)      # remove the OLD j from mask (using old j, still available)
+        j = prev_j
+ 
+    path.reverse()
+
+
+    return best_cost, path
