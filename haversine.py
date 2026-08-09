@@ -1,5 +1,11 @@
 import math
-from tcp import held_karp
+from tsp import held_karp
+from dataclasses import dataclass
+
+@dataclass
+class Point:
+    lat: float
+    lng: float
 
 def haversine(lat1 ,long1 ,lat2 ,long2 ):
     Radius = 6371.0088
@@ -25,7 +31,6 @@ paris = (48.8567, 2.3508)
 kuala lumpur = (3.1412, 101.6865)
 """
 
-stops = [(45.7597, 4.8422), (48.8567, 2.3508),(3.1412, 101.6865)]
 
 def matrix_convertor(stops):
     """
@@ -37,8 +42,11 @@ def matrix_convertor(stops):
     """
     n_stops = len(stops)
 
-    if n_stops == 0 or n_stops == 1:
+    if n_stops == 0:
+        return []
+    elif n_stops == 1:
         return [[0]]
+    
     matrix_dis = [[0] * n_stops for _ in range(n_stops) ]
 
     for i in range(n_stops):
@@ -47,13 +55,17 @@ def matrix_convertor(stops):
             if i == j:
                 continue
 
-            distance = haversine(stops[i][0],stops[i][1],stops[j][0],stops[j][1])
+            distance = haversine(stops[i].lat, stops[i].lng, stops[j].lat, stops[j].lng)
             #print(stops[i][0],stops[i][1],stops[j][0],stops[j][1])
             matrix_dis[i][j] = distance
 
     return matrix_dis
 
-dist = matrix_convertor(stops)
-bestcost, route = held_karp(dist)
-print(f"best cost {bestcost}\n")
-print(f"route: {route}")
+if __name__ == "__main__":
+
+    stops = [Point(45.7597, 4.8422), Point(48.8567, 2.3508), Point(3.1412, 101.6865)]
+
+    dist = matrix_convertor(stops)
+    bestcost, route = held_karp(dist)
+    print(f"best cost {bestcost}\n")
+    print(f"route: {route}")

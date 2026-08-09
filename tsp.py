@@ -1,4 +1,4 @@
-def held_karp(dist):
+def held_karp(dist, round_trip = True):
 
     #dist is the distance between each locations
     n = len(dist)
@@ -49,7 +49,10 @@ def held_karp(dist):
     for j in range(n):
         if j == 0:
             continue  # can't end at the start with nothing else visited, skip self-loop case
-        cost = dp[FULL][j] + dist[j][0]   # + cost to return home
+        if round_trip:
+            cost = dp[FULL][j] + dist[j][0]   # + cost to return home
+        else: 
+            cost = dp[FULL][j]
         if cost < best_cost:
             best_cost = cost
             best_last = j
@@ -69,6 +72,23 @@ def held_karp(dist):
 
 
     return best_cost, path
+
+def route_distance(matrix, order, round_trip=True):
+    total = 0
+    if len(order) == 0 or len(order) == 1:
+        return 0
+
+     
+    for i in range(len(order) - 1):
+
+        total += matrix[order[i]][order[i+1]]
+
+    if round_trip:
+        total += matrix[order[len(order)-1]][0]
+
+    # walk consecutive pairs in `order`, adding matrix[from][to] each time
+    # then, if round_trip, add the leg from the last stop back to the first
+    return total
 
 if __name__ == "__main__":
     testing1 = held_karp([[]])

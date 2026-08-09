@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
 from haversine import matrix_convertor 
-from tsp import held_karp
+from tsp import held_karp, route_distance
 
 app = FastAPI()
 
@@ -28,10 +28,11 @@ class OptimizeRequest(BaseModel):
 @app.post("/optimize")
 def optimize(req: OptimizeRequest):
     # 1. reject bad input (too few stops, too many for Held-Karp)
-    if len(req.stops) <= 0 or len(req.stops) >= 10:
+    if len(req.stops) <= 1 or len(req.stops) > 10:
         raise HTTPException(400, "Add between 2 and 10 stops.")
     matrix_input = matrix_convertor(req.stops)
-    best_cost, path = held_karp(matrix_input)
+    best_cost, path = held_karp(matrix_input, req.round_trip)
+    naive_cost = route_distance(matrix_input, list(range(len(req.stops))), req.round_trip)
 
     return {
     "order": path,
