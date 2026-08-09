@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Errand Route Planner</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+</head>
+<body>
+  <h1>Errand Route Planner</h1>
+  <button id="planBtn">Plan route</button>
+  <pre id="output"></pre>
+
+  <h2>Stops</h2>
+  <ul id="stopList"></ul>
+  <input id="nameInput" placeholder="Name">
+  <input id="latInput" placeholder="Lat" type="number" step="any">
+  <input id="lngInput" placeholder="Lng" type="number" step="any">
+  <button id="addBtn">Add stop</button>
+
+  <h2>Map</h2>
+  <div id="map" style="height: 400px;"></div>
+  <input id="addressInput" placeholder="Search address">
+  <button id="searchBtn">Search</button>
+
+  
+
+  <script>
+    const API = "http://127.0.0.1:8000";
+
+    const stops = [
+      { name: "Home PJ",        lat: 3.1073, lng: 101.6067 },
+      { name: "Mid Valley",     lat: 3.1177, lng: 101.6770 },
+      { name: "KLCC",           lat: 3.1578, lng: 101.7118 },
+      { name: "Sunway Pyramid", lat: 3.0730, lng: 101.6067 }
+    ];
+
+    async function planRoute() {
+    try {
+      // 1. send a POST to API + "/optimize"
+      const res = await fetch(API + "/optimize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stops, round_trip: true })
+        });
+
+      // 2. body is JSON: { stops, round_trip: true }
+      if (!res.ok) {
+        throw new Error(`Server returned ${res.status}`);
+        }
+
+      // 3. read the JSON response
+      const data = await res.json();
+
+      // 4. put it in the <pre> so you can see it
+      document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+
+    } catch (err) {
+        document.getElementById("output").textContent = "Error: " + err.message;
+    }
+    }
+
+    function renderStops() {
+    const list = document.getElementById("stopList");
+    list.innerHTML = "";
+
+    stops.forEach((stop, index) => {
+        const li = document.createElement("li");
+        li.textContent = `${stop.name} (${stop.lat}, ${stop.lng}) `;
+
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "Remove";
+        removeBtn.addEventListener("click", () => {
+        stops.splice(index, 1);
+        renderStops();
+        });
+
+        li.appendChild(removeBtn);
+        list.appendChild(li);
+    });
+    }
+
+    const map = L.map('map').setView([3.1390, 101.6869], 12); // KL, zoom 12
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    map.on('click', (e) => {
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+    const name = prompt("Name this stop:", "New stop");
+    if (!name) return;
+
+    stops.push({ name, lat, lng });
+        renderStops();
+        });
+
+        let markers = [];
+
+    function renderStops() {
+    const list = document.getElementById("stopList");
+    list.innerHTML = "";
+
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+
+    stops.forEach((stop, index) => {
+        const li = document.createElement("li");
+        li.textContent = `${stop.name} (${stop.lat}, ${stop.lng}) `;
+
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "Remove";
+        removeBtn.addEventListener("click", () => {
+        stops.splice(index, 1);
+        renderStops();
+        });
+
+        li.appendChild(removeBtn);
+        list.appendChild(li);
+
+        const marker = L.marker([stop.lat, stop.lng]).addTo(map).bindPopup(stop.name);
+        markers.push(marker);
+    });
+    }
+
+    document.getElementById("searchBtn").addEventListener("click", async () => {
+    const query = document.getElementById("addressInput").value;
+    if (!query) return;
+
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+    const res = await fetch(url);
+    const results = await res.json();
+
+    if (results.length === 0) {
+        alert("No results found.");
+        return;
+    }
+
+    const { lat, lon, display_name } = results[0];
+    stops.push({ name: display_name, lat: parseFloat(lat), lng: parseFloat(lon) });
+    renderStops();
+    map.setView([lat, lon], 14);
+
+    document.getElementById("addressInput").value = "";
+    });
+
+
+
+    document.getElementById("planBtn").addEventListener("click", planRoute);
+    document.getElementById("addBtn").addEventListener("click", () => {
+    const name = document.getElementById("nameInput").value;
+    const lat = parseFloat(document.getElementById("latInput").value);
+    const lng = parseFloat(document.getElementById("lngInput").value);
+
+    if (!name || isNaN(lat) || isNaN(lng)) return;
+
+    stops.push({ name, lat, lng });
+    renderStops();
+
+    document.getElementById("nameInput").value = "";
+    document.getElementById("latInput").value = "";
+    document.getElementById("lngInput").value = "";
+    });
+    renderStops();
+  </script>
+</body>
+</html>

@@ -7,6 +7,13 @@ from tsp import held_karp, route_distance
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 """when someone visit the root
     the read_root will be called
 """
@@ -24,7 +31,7 @@ class Stop(BaseModel):
 class OptimizeRequest(BaseModel):
     stops: list[Stop]
     round_trip: bool = True
-
+    
 @app.post("/optimize")
 def optimize(req: OptimizeRequest):
     # 1. reject bad input (too few stops, too many for Held-Karp)
