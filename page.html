@@ -10,7 +10,7 @@
 <body>
   <h1>Errand Route Planner</h1>
   <button id="planBtn">Plan route</button>
-  <pre id="output"></pre>
+  <div id="results"></div>
 
   <h2>Stops</h2>
   <ul id="stopList"></ul>
@@ -18,6 +18,8 @@
   <input id="latInput" placeholder="Lat" type="number" step="any">
   <input id="lngInput" placeholder="Lng" type="number" step="any">
   <button id="addBtn">Add stop</button>
+
+  <label><input type="checkbox" id="roundTripToggle" checked> Round trip</label>
 
   <h2>Map</h2>
   <div id="map" style="height: 400px;"></div>
@@ -36,13 +38,18 @@
       { name: "Sunway Pyramid", lat: 3.0730, lng: 101.6067 }
     ];
 
+
     async function planRoute() {
     try {
+        const roundTrip = document.getElementById("roundTripToggle").checked;
+
       // 1. send a POST to API + "/optimize"
       const res = await fetch(API + "/optimize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stops, round_trip: true })
+
+        body: JSON.stringify({ stops, round_trip: roundTrip })
+
         });
 
       // 2. body is JSON: { stops, round_trip: true }
@@ -53,17 +60,16 @@
       // 3. read the JSON response
       const data = await res.json();
 
+      renderResults(data);
+
       // 4. put it in the <pre> so you can see it
-      document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+      document.getElementById("output").textContent = "";
 
     } catch (err) {
         document.getElementById("output").textContent = "Error: " + err.message;
     }
-    }
+    
 
-    function renderStops() {
-    const list = document.getElementById("stopList");
-    list.innerHTML = "";
 
     stops.forEach((stop, index) => {
         const li = document.createElement("li");
@@ -77,7 +83,6 @@
         });
 
         li.appendChild(removeBtn);
-        list.appendChild(li);
     });
     }
 
@@ -94,7 +99,8 @@
     if (!name) return;
 
     stops.push({ name, lat, lng });
-        renderStops();
+    renderStops();
+    map.setView([lat, lng], map.getZoom());
         });
 
         let markers = [];
@@ -114,6 +120,7 @@
         removeBtn.textContent = "Remove";
         removeBtn.addEventListener("click", () => {
         stops.splice(index, 1);
+
         renderStops();
         });
 
@@ -124,6 +131,21 @@
         markers.push(marker);
     });
     }
+
+    function renderResults(data) {
+  const results = document.getElementById("results");
+
+  const orderedNames = data.order.map(i => stops[i].name);
+
+  results.innerHTML = `
+    <h3>Optimised order</h3>
+    <ol>${orderedNames.map(name => `<li>${name}</li>`).join("")}</ol>
+    <p>Optimised distance: ${data.optimisedDistance} km</p>
+    <p>Naive distance: ${data.naiveDistance} km</p>
+    <p>Round trip: ${data.roundTrip ? "Yes" : "No"}</p>
+  `;
+    }
+
 
     document.getElementById("searchBtn").addEventListener("click", async () => {
     const query = document.getElementById("addressInput").value;
