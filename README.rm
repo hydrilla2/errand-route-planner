@@ -1,0 +1,7 @@
+HOW TO RUN THE APP
+
+1) FRONTEND
+start page.html
+
+2) BACKEND (FASTAPI)
+python -m uvicorn main:app --reload
