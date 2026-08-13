@@ -69,21 +69,6 @@
         document.getElementById("output").textContent = "Error: " + err.message;
     }
     
-
-
-    stops.forEach((stop, index) => {
-        const li = document.createElement("li");
-        li.textContent = `${stop.name} (${stop.lat}, ${stop.lng}) `;
-
-        const removeBtn = document.createElement("button");
-        removeBtn.textContent = "Remove";
-        removeBtn.addEventListener("click", () => {
-        stops.splice(index, 1);
-        renderStops();
-        });
-
-        li.appendChild(removeBtn);
-    });
     }
 
     const map = L.map('map').setView([3.1390, 101.6869], 12); // KL, zoom 12
@@ -140,10 +125,11 @@
   results.innerHTML = `
     <h3>Optimised order</h3>
     <ol>${orderedNames.map(name => `<li>${name}</li>`).join("")}</ol>
-    <p>Optimised distance: ${data.optimisedDistance} km</p>
-    <p>Naive distance: ${data.naiveDistance} km</p>
-    <p>Round trip: ${data.roundTrip ? "Yes" : "No"}</p>
-  `;
+    <p>Optimised duration: ${data.optimisedDistance} min</p>
+    <p>Naive duration: ${data.naiveDistance} min</p>
+    <p>Source: ${data.distanceSource}</p>
+
+    `;
     }
 
 
