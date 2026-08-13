@@ -16,11 +16,22 @@ from tsp import held_karp, route_distance
 def brute_force(dist, round_trip=True):
     n = len(dist)
     best, best_route = float("inf"), None
-    for perm in itertools.permutations(range(1, n)):
-        route = [0] + list(perm)
-        cost = route_distance(dist, route, round_trip=round_trip)
-        if cost < best:
-            best, best_route = cost, route
+
+    if round_trip:
+        candidates = range(1, n)
+        for perm in itertools.permutations(candidates):
+            route = [0] + list(perm)
+            cost = route_distance(dist, route, round_trip=True)
+            if cost < best:
+                best, best_route = cost, route
+    else:
+        middle = [i for i in range(1, n) if i != n - 1]
+        for perm in itertools.permutations(middle):
+            route = [0] + list(perm) + [n - 1]
+            cost = route_distance(dist, route, round_trip=False)
+            if cost < best:
+                best, best_route = cost, route
+
     return best, best_route
 
 

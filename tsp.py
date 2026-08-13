@@ -43,19 +43,19 @@ def held_karp(dist, round_trip = True):
     # find best end point
     #best_cost = min(dp[FULL][j] for j in range(1, n))  # or +dist[j][0] if round-trip
 
-    best_cost = float('inf')
-    best_last = -1
-
-    for j in range(n):
-        if j == 0:
-            continue  # can't end at the start with nothing else visited, skip self-loop case
-        if round_trip:
+    if round_trip:
+        best_cost = float('inf')
+        best_last = -1
+        for j in range(n):
+            if j == 0:
+                continue  # can't end at the start with nothing else visited, skip self-loop case
             cost = dp[FULL][j] + dist[j][0]   # + cost to return home
-        else: 
-            cost = dp[FULL][j]
-        if cost < best_cost:
-            best_cost = cost
-            best_last = j
+            if cost < best_cost:
+                best_cost = cost
+                best_last = j
+    else:
+        best_last = n - 1  # fixed destination: last stop in the input order
+        best_cost = dp[FULL][best_last]
 
 
     # TODO: backtrack using `parent` to reconstruct the actual route order
