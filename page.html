@@ -121,6 +121,7 @@
   const results = document.getElementById("results");
 
   const orderedNames = data.order.map(i => stops[i].name);
+  const mapsLink = buildGoogleMapsLink(data);
 
   results.innerHTML = `
     <h3>Optimised order</h3>
@@ -128,9 +129,35 @@
     <p>Optimised duration: ${data.optimisedDistance} min</p>
     <p>Naive duration: ${data.naiveDistance} min</p>
     <p>Source: ${data.distanceSource}</p>
+    <p><a href="${mapsLink}" target="_blank">Open in Google Maps</a></p>
+
 
     `;
     }
+
+    function buildGoogleMapsLink(data) {
+    const orderedStops = data.order.map(i => stops[i]);
+
+    const origin = orderedStops[0];
+    let destination = orderedStops[orderedStops.length - 1];
+    let middle = orderedStops.slice(1, -1);
+
+    if (data.roundTrip) {
+      middle = orderedStops.slice(1);
+      destination = origin;
+    }
+
+    const originStr = `${origin.lat},${origin.lng}`;
+    const destinationStr = `${destination.lat},${destination.lng}`;
+    const waypointsStr = middle.map(s => `${s.lat},${s.lng}`).join("|");
+
+    let url = `https://www.google.com/maps/dir/?api=1&origin=${originStr}&destination=${destinationStr}&travelmode=driving`;
+    if (waypointsStr) {
+      url += `&waypoints=${encodeURIComponent(waypointsStr)}`;
+    }
+    return url;
+  }
+
 
 
     document.getElementById("searchBtn").addEventListener("click", async () => {
