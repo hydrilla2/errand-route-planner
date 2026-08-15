@@ -1,4 +1,4 @@
-def held_karp(dist, round_trip = True):
+def held_karp(dist, round_trip = True, end_index = None):
 
     #dist is the distance between each locations
     n = len(dist)
@@ -44,18 +44,28 @@ def held_karp(dist, round_trip = True):
     #best_cost = min(dp[FULL][j] for j in range(1, n))  # or +dist[j][0] if round-trip
 
     if round_trip:
+            best_cost = float('inf')
+            best_last = -1
+            for j in range(n):
+                if j == 0:
+                    continue
+                cost = dp[FULL][j] + dist[j][0]
+                if cost < best_cost:
+                    best_cost = cost
+                    best_last = j
+    elif end_index is not None:
+        best_last = end_index
+        best_cost = dp[FULL][best_last]
+    else:
         best_cost = float('inf')
         best_last = -1
         for j in range(n):
             if j == 0:
-                continue  # can't end at the start with nothing else visited, skip self-loop case
-            cost = dp[FULL][j] + dist[j][0]   # + cost to return home
+                continue
+            cost = dp[FULL][j]
             if cost < best_cost:
                 best_cost = cost
                 best_last = j
-    else:
-        best_last = n - 1  # fixed destination: last stop in the input order
-        best_cost = dp[FULL][best_last]
 
 
     # TODO: backtrack using `parent` to reconstruct the actual route order
