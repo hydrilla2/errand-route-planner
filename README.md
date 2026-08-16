@@ -1,3 +1,6 @@
+# Here is the documentation link !!!!
+https://docs.google.com/document/d/1VsX1iH2Yf3YJze_CIb6DqSsxK3hcTKDe/edit?usp=sharing&ouid=104687013512495232140&rtpof=true&sd=true
+
 # Errand Route Planner
 
 Given a set of stops, finds the fastest driving order to visit them (exact solver, real road durations via OSRM), and delivers the result to Google Maps for navigation.
