@@ -68,7 +68,6 @@ def held_karp(dist, round_trip = True, end_index = None):
                 best_last = j
 
 
-    # TODO: backtrack using `parent` to reconstruct the actual route order
     path = []
     mask, j = FULL, best_last
 
