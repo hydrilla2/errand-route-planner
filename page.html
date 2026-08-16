@@ -65,11 +65,9 @@
 
         renderResults(data);
 
-        // 4. put it in the <pre> so you can see it
-        document.getElementById("output").textContent = "";
 
       } catch (err) {
-        document.getElementById("output").textContent = "Error: " + err.message;
+        document.getElementById("results").innerHTML = `<p style="color:red">Error: ${err.message}</p>`;
       }
 
     }
